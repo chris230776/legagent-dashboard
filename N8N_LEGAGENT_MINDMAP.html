@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N8N LEGAGENT - Mind Map Infrastructure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mindmap-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            padding: 20px;
+        }
+        
+        /* Central Hub */
+        .central-hub {
+            background: linear-gradient(135deg, #7b2cbf 0%, #3a0ca3 100%);
+            padding: 30px 50px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(123, 44, 191, 0.4);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .central-hub h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .central-hub span {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+        
+        /* Stacks Container */
+        .stacks-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+        }
+        
+        @media (max-width: 1200px) {
+            .stacks-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .stacks-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Stack Card */
+        .stack-card {
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stack-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .stack-header {
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .stack-header.master {
+            background: linear-gradient(135deg, #ff006e 0%, #ff4d6d 100%);
+        }
+        
+        .stack-header.ia {
+            background: linear-gradient(135deg, #00d4ff 0%, #0096c7 100%);
+        }
+        
+        .stack-header.dirco {
+            background: linear-gradient(135deg, #06d6a0 0%, #059669 100%);
+        }
+        
+        .stack-header.compliance {
+            background: linear-gradient(135deg, #ffd60a 0%, #e09f3e 100%);
+            color: #1a1a2e;
+        }
+        
+        .stack-header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .stack-header .priority {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stack-header .priority.p0 {
+            background: rgba(0,0,0,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        /* Agents List */
+        .agents-list {
+            padding: 15px;
+        }
+        
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .agent-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        
+        .stack-card:nth-child(1) .agent-item { border-left-color: #ff006e; }
+        .stack-card:nth-child(2) .agent-item { border-left-color: #00d4ff; }
+        .stack-card:nth-child(3) .agent-item { border-left-color: #06d6a0; }
+        .stack-card:nth-child(4) .agent-item { border-left-color: #ffd60a; }
+        
+        .agent-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        
+        .stack-card:nth-child(1) .agent-icon { background: rgba(255, 0, 110, 0.2); }
+        .stack-card:nth-child(2) .agent-icon { background: rgba(0, 212, 255, 0.2); }
+        .stack-card:nth-child(3) .agent-icon { background: rgba(6, 214, 160, 0.2); }
+        .stack-card:nth-child(4) .agent-icon { background: rgba(255, 214, 10, 0.2); }
+        
+        .agent-info {
+            flex: 1;
+        }
+        
+        .agent-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        
+        .agent-function {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        
+        .agent-tools {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        /* Tools Section */
+        .tools-section {
+            margin-top: 50px;
+            width: 100%;
+            max-width: 1400px;
+        }
+        
+        .tools-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            color: #888;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+        }
+        
+        @media (max-width: 1000px) {
+            .tools-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .tool-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .tool-card:hover {
+            background: rgba(255,255,255,0.06);
+            transform: scale(1.02);
+        }
+        
+        .tool-card.connected {
+            border-color: #06d6a0;
+            box-shadow: 0 0 20px rgba(6, 214, 160, 0.1);
+        }
+        
+        .tool-card.pending {
+            border-color: #ffd60a;
+        }
+        
+        .tool-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .tool-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .tool-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tool-status.connected { color: #06d6a0; }
+        .tool-status.pending { color: #ffd60a; }
+        .tool-status.optional { color: #888; }
+        
+        /* Flow Diagram */
+        .flow-section {
+            margin-top: 50px;
+            width: 100%;
+            max-width: 1400px;
+        }
+        
+        .flow-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            color: #888;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 30px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .flow-step {
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .flow-step.input {
+            background: linear-gradient(135deg, #3a0ca3 0%, #7b2cbf 100%);
+        }
+        
+        .flow-step.agent {
+            background: linear-gradient(135deg, #ff006e 0%, #ff4d6d 100%);
+        }
+        
+        .flow-step.output {
+            background: linear-gradient(135deg, #06d6a0 0%, #059669 100%);
+        }
+        
+        .flow-arrow {
+            color: #444;
+            font-size: 1.5rem;
+        }
+        
+        .flow-step-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .flow-step-sub {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        /* Legend */
+        .legend {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .legend-dot.p0 { background: #ff006e; }
+        .legend-dot.p1 { background: #00d4ff; }
+        .legend-dot.p2 { background: #06d6a0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 N8N LEGAGENT</h1>
+        <p>Infrastructure Complète des Agents IA</p>
+        
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Stacks</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">20</div>
+                <div class="stat-label">Agents</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Outils</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">4645</div>
+                <div class="stat-label">Contacts</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mindmap-container">
+        <!-- Central Hub -->
+        <div class="central-hub">
+            <h2>🧠 N8N LEGAGENT</h2>
+            <span>Orchestrateur Central</span>
+        </div>
+        
+        <!-- 4 Stacks -->
+        <div class="stacks-container">
+            <!-- Stack 1: Master -->
+            <div class="stack-card">
+                <div class="stack-header master">
+                    <h3>🎯 STACK MASTER</h3>
+                    <span class="priority p0">P0 - PRIORITÉ ABSOLUE</span>
+                </div>
+                <div class="agents-list">
+                    <div class="agent-item">
+                        <div class="agent-icon">🧹</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Tri</div>
+                            <div class="agent-function">Nettoyer + Dédupliquer</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📊</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Scoring</div>
+                            <div class="agent-function">Noter 0-100</div>
+                        </div>
+                        <div class="agent-tools">2</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🏷️</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Segmentation</div>
+                            <div class="agent-function">Router IA/DirCo/Compliance</div>
+                        </div>
+                        <div class="agent-tools">2</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📧</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Email</div>
+                            <div class="agent-function">Cold emails personnalisés</div>
+                        </div>
+                        <div class="agent-tools">4</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">💼</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent LinkedIn</div>
+                            <div class="agent-function">Messages + Connexions</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📡</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Veille</div>
+                            <div class="agent-function">Alertes opportunités</div>
+                        </div>
+                        <div class="agent-tools">4</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stack 2: IA Agentic -->
+            <div class="stack-card">
+                <div class="stack-header ia">
+                    <h3>🤖 STACK IA AGENTIC</h3>
+                    <span class="priority">P1 - Après 1er client</span>
+                </div>
+                <div class="agents-list">
+                    <div class="agent-item">
+                        <div class="agent-icon">🔍</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Audit IA</div>
+                            <div class="agent-function">Analyser process client</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🏗️</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Builder</div>
+                            <div class="agent-function">Créer workflows N8N</div>
+                        </div>
+                        <div class="agent-tools">4</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🧪</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Testeur</div>
+                            <div class="agent-function">Valider + Debug</div>
+                        </div>
+                        <div class="agent-tools">2</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📈</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Moniteur</div>
+                            <div class="agent-function">Alertes + Stats</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stack 3: DirCo -->
+            <div class="stack-card">
+                <div class="stack-header dirco">
+                    <h3>📈 STACK DIRCO</h3>
+                    <span class="priority">P1 - Après 1er client</span>
+                </div>
+                <div class="agents-list">
+                    <div class="agent-item">
+                        <div class="agent-icon">⚙️</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Setup CRM</div>
+                            <div class="agent-function">Configurer CRM client</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">💎</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Enrichisseur</div>
+                            <div class="agent-function">Data prospects client</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🎯</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Prospecteur</div>
+                            <div class="agent-function">Outreach pour client</div>
+                        </div>
+                        <div class="agent-tools">4</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">⭐</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Scoreur</div>
+                            <div class="agent-function">Qualifier leads client</div>
+                        </div>
+                        <div class="agent-tools">2</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📊</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Reporter</div>
+                            <div class="agent-function">Dashboard KPIs</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stack 4: Compliance -->
+            <div class="stack-card">
+                <div class="stack-header compliance">
+                    <h3>⚖️ STACK COMPLIANCE</h3>
+                    <span class="priority">P1 - Après 1er client</span>
+                </div>
+                <div class="agents-list">
+                    <div class="agent-item">
+                        <div class="agent-icon">📋</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Pré-Audit</div>
+                            <div class="agent-function">Questionnaire + Score risque</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🗺️</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Cartographe</div>
+                            <div class="agent-function">Mapper traitements</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">🤖</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Analyseur AI Act</div>
+                            <div class="agent-function">Classification IA</div>
+                        </div>
+                        <div class="agent-tools">2</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">📄</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Générateur Docs</div>
+                            <div class="agent-function">Templates conformité</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                    <div class="agent-item">
+                        <div class="agent-icon">👁️</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Agent Veilleur</div>
+                            <div class="agent-function">Alertes réglementaires</div>
+                        </div>
+                        <div class="agent-tools">3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tools Section -->
+        <div class="tools-section">
+            <h2>🔧 Outils à Connecter (Config 1x)</h2>
+            <div class="tools-grid">
+                <div class="tool-card pending">
+                    <div class="tool-icon">📊</div>
+                    <div class="tool-name">Google Sheets</div>
+                    <div class="tool-status pending">⏳ À configurer</div>
+                </div>
+                <div class="tool-card pending">
+                    <div class="tool-icon">🏢</div>
+                    <div class="tool-name">Pappers API</div>
+                    <div class="tool-status pending">⏳ À configurer</div>
+                </div>
+                <div class="tool-card pending">
+                    <div class="tool-icon">🧠</div>
+                    <div class="tool-name">Claude API</div>
+                    <div class="tool-status pending">⏳ À configurer</div>
+                </div>
+                <div class="tool-card pending">
+                    <div class="tool-icon">📧</div>
+                    <div class="tool-name">Gmail / SMTP</div>
+                    <div class="tool-status pending">⏳ À configurer</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">💬</div>
+                    <div class="tool-name">Slack</div>
+                    <div class="tool-status optional">Optionnel</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">👻</div>
+                    <div class="tool-name">PhantomBuster</div>
+                    <div class="tool-status optional">Optionnel</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flow Diagram -->
+        <div class="flow-section">
+            <h2>🔄 Flux Stack Master (Priorité)</h2>
+            <div class="flow-diagram">
+                <div class="flow-step input">
+                    <div class="flow-step-name">📥 Import</div>
+                    <div class="flow-step-sub">4645 contacts</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step agent">
+                    <div class="flow-step-name">🧹 Tri</div>
+                    <div class="flow-step-sub">Dédup + Clean</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step agent">
+                    <div class="flow-step-name">📊 Scoring</div>
+                    <div class="flow-step-sub">0-100 pts</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step agent">
+                    <div class="flow-step-name">🏷️ Segment</div>
+                    <div class="flow-step-sub">IA/DirCo/Compliance</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step agent">
+                    <div class="flow-step-name">📧 Email</div>
+                    <div class="flow-step-sub">Cold outreach</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step output">
+                    <div class="flow-step-name">🎯 RDV</div>
+                    <div class="flow-step-sub">Clients signés</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot p0"></div>
+                <span>P0 - Maintenant (Sem 1-2)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot p1"></div>
+                <span>P1 - Après 1er client</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot p2"></div>
+                <span>P2 - Optionnel</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
